@@ -77,7 +77,7 @@ app.put('/api/movies/:id', (req, res) => {
 // DELETE
 app.delete('/api/movies/:id', (req, res) => {
   const { id } = req.params;
-  const safeValues = [id]; //this need to be array!!
+  const safeValues = [id];
   pool
     .query('DELETE FROM movies WHERE id=$1 RETURNING *;', safeValues)
     .then(({ rows }) => {
