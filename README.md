@@ -1,6 +1,5 @@
 # How to create the Netflix clone backend
 
-
 mkdir movies-backend
 cd movies-backend
 
@@ -13,22 +12,26 @@ npm i express dotenv pg cors
 git init
 git-ignore: .env
 
-
 VSCode plugin: Thunder Client
 
 via browser on elephantSQL website:
-drop table books;
-create table movies (id serial PRIMARY KEY, title varchar(255), director varchar(255), year int);
+https://api.elephantsql.com/console/2cd189cb-9dab-4a1c-8819-2fac02b28cbe/browser
+
+CREATE table movies (
+id serial PRIMARY KEY, title varchar(255), director varchar(255), year int, rating int, poster varchar(255), genre varchar(255));
+
+if adding foreign key later, do neot forget:
 ON DELETE CASCADE;
 
-INSERT INTO movies (title, director, year, genre) VALUES ('Die Wiese – Ein Paradies nebenan', 'Jan Haft', 2019, 'nature documentary');
-
-
+INSERT INTO movies (title, director, year, rating, poster, genre) VALUES ('Die Wiese – Ein Paradies nebenan', 'Jan Haft', 2019, 7.8, 'https://nautilusfilm.de/de/img/projects/DieWiesenebenan/Plakat_DieWiese.jpg', 'nature documentary');
+INSERT INTO movies (title, director, year, rating, poster, genre) VALUES ('Das geheime Leben der Bäume', 'Jörg Adolph', 2019, 7.0, 'https://de.web.img3.acsta.net/pictures/19/10/30/10/43/5277554.jpg', 'nature documentary');
 
 create Github repo without README.md
 
 deploy on render
-enter env. variables
+https://dashboard.render.com/web/srv-civufsenqql48o37jrgg/env
+
+enter env. variables on render
 
 write code for node express server
 
@@ -46,28 +49,28 @@ const pool = new Pool({ connectionString: process.env.ELEPHANT_SQL_CONNECTION_ST
 app.use(express).json()); // body parser needs to be before the route definitions
 
 // type in ElephantSQL first to debug and if it works then copy paste to this to this file here
-//  RESTful API routes (monolithic approach)
-
+// RESTful API routes (monolithic approach)
 
 app.get(‘/api/movies/:id’, (req, res) => {
 const { id } = req.params;
 const safeValues=[id]; // to prevent SQL injection
 // id needs to be an array for ElephantSQL pool function
-	pool
-		.query(‘SELECT * FROM movies WHERE id=$1;’, safeValues)
-		.then(({rowCount, rows}) => {
-			// rowCount from the Database response
-			if (data.rowCount === 0) {
+pool
+.query(‘SELECT \* FROM movies WHERE id=$1;’, safeValues)
+.then(({rowCount, rows}) => {
+// rowCount from the Database response
+if (data.rowCount === 0) {
 res.status(404).json({message: `Movie with id ${id} Not Found`}));
-			} else {
-				console.log(rows);
-				res.json(rows[0]); // rows is always array of 1 item
+} else {
+console.log(rows);
+res.json(rows[0]); // rows is always array of 1 item
 
-			console.log(data);
-			res.json(data.rows);
-			}
-			})
-		.catch(e => res.status(500).json({ message: e.message }));
+    		console.log(data);
+    		res.json(data.rows);
+    		}
+    		})
+    	.catch(e => res.status(500).json({ message: e.message }));
+
 });
 
 app.post(‘/api/movies’, (req, res) => {
