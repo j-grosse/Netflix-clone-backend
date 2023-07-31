@@ -41,6 +41,48 @@ app.get('/api/movies/:id', (req, res) => {
     .catch((e) => res.status(500).json({ message: e.message }));
 });
 
+// SEARCH
+app.get('/api/search', (req, res) => {
+  const { title, director, year, rating, genre } = req.query;
+  const conditions = [];
+  const searchValues = [];
+
+  if (title) {
+    conditions.push('title ILIKE $' + (searchValues.length + 1));
+    searchValues.push('%' + title + '%');
+  }
+  if (director) {
+    conditions.push('director ILIKE $' + (searchValues.length + 1));
+    searchValues.push('%' + director + '%');
+  }
+  if (year) {
+    conditions.push('year = $' + (searchValues.length + 1));
+    searchValues.push(year);
+  }
+  if (rating) {
+    conditions.push('rating = $' + (searchValues.length + 1));
+    searchValues.push(rating);
+  }
+  if (genre) {
+    conditions.push('genre ILIKE $' + (searchValues.length + 1));
+    searchValues.push('%' + genre + '%');
+  }
+
+  const query = 'SELECT * FROM movies WHERE ' + conditions.join(' AND ');
+  console.log(query);
+  pool
+    .query(query, searchValues)
+    .then(({ rowCount, rows }) => {
+      if (rowCount === 0) {
+        res.status(404).json({ message: 'No movies found with the given criteria' });
+      } else {
+        res.status(200).json(rows);
+      }
+    })
+    .catch((e) => res.status(500).json({ message: e.message }));
+});
+
+
 // CREATE
 app.post('/api/movies', (req, res) => {
   const { title, director, year, rating, poster, genre } = req.body;
