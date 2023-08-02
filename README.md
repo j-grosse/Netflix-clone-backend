@@ -14,6 +14,10 @@ git-ignore: .env
 
 VSCode plugin: Thunder Client
 
+---
+
+SQL commands
+
 via browser on elephantSQL website:
 https://api.elephantsql.com/console/2cd189cb-9dab-4a1c-8819-2fac02b28cbe/browser
 
@@ -25,6 +29,24 @@ ON DELETE CASCADE;
 
 INSERT INTO movies (title, director, year, rating, poster, genre) VALUES ('Die Wiese – Ein Paradies nebenan', 'Jan Haft', 2019, 7.8, 'https://nautilusfilm.de/de/img/projects/DieWiesenebenan/Plakat_DieWiese.jpg', 'nature documentary');
 INSERT INTO movies (title, director, year, rating, poster, genre) VALUES ('Das geheime Leben der Bäume', 'Jörg Adolph', 2019, 7.0, 'https://de.web.img3.acsta.net/pictures/19/10/30/10/43/5277554.jpg', 'nature documentary');
+
+CREATE TABLE comments (
+id SERIAL PRIMARY KEY,
+movie_id INTEGER REFERENCES movies(id),
+author varchar(255),
+comment TEXT NOT NULL,
+datetime TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE comments
+ADD CONSTRAINT movie_id
+FOREIGN KEY (movie_id)
+REFERENCES movies(id)
+ON DELETE CASCADE;
+
+INSERT INTO comments (movie_id, author, comment) VALUES (1, 'Jay', 'This is a great movie!');
+
+---
 
 create Github repo without README.md
 

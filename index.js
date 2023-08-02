@@ -12,7 +12,25 @@ app.use(express.json());
 
 ///// RESTful API /////
 
-// READ
+// READ Movies from TMDB
+app.get('/api/movies/:id/comments', (req, res) => {
+  const { id } = req.params;
+  const safeValues = [id]; // safe against SQL injection. This need to be array
+  pool
+    .query('SELECT * FROM comments WHERE movie_id=$1;', safeValues)
+    .then(({ rowCount, rows }) => {
+      // rowCount from the database response
+      if (rowCount === 0) {
+        res.status(404).json({ message: `Movie comments for movie_id ${id} Not Found` });
+      } else {
+        console.log(rows);
+        res.json(rows[0]); // rows is array of 1 item
+      }
+    })
+    .catch((e) => res.status(500).json({ message: e.message }));
+});
+
+// READ Movies
 app.get('/api/movies', (req, res) => {
   pool
     .query('SELECT * FROM movies;')
@@ -23,7 +41,7 @@ app.get('/api/movies', (req, res) => {
     .catch((e) => res.status(500).json({ message: e.message }));
 });
 
-// READ by ID
+// READ Movie by ID
 app.get('/api/movies/:id', (req, res) => {
   const { id } = req.params;
   const safeValues = [id]; // safe against SQL injection. This need to be array
@@ -41,7 +59,25 @@ app.get('/api/movies/:id', (req, res) => {
     .catch((e) => res.status(500).json({ message: e.message }));
 });
 
-// SEARCH
+// READ Comments by ID
+app.get('/api/movies/comments/:id', (req, res) => {
+  const { id } = req.params;
+  const safeValues = [id]; // safe against SQL injection. This need to be array
+  pool
+    .query('SELECT * FROM comments WHERE movie_id=$1;', safeValues)
+    .then(({ rowCount, rows }) => {
+      // rowCount from the database response
+      if (rowCount === 0) {
+        res.status(404).json({ message: `Movie comments for movie_id ${id} Not Found` });
+      } else {
+        console.log(rows);
+        res.json(rows[0]); // rows is array of 1 item
+      }
+    })
+    .catch((e) => res.status(500).json({ message: e.message }));
+});
+
+// SEARCH Movies
 app.get('/api/search', (req, res) => {
   const { title, director, year, rating, genre } = req.query;
   const conditions = [];
@@ -83,7 +119,7 @@ app.get('/api/search', (req, res) => {
 });
 
 
-// CREATE
+// CREATE Movie
 app.post('/api/movies', (req, res) => {
   const { title, director, year, rating, poster, genre } = req.body;
   const safeValues = [title, director, year, rating, poster, genre];
@@ -99,7 +135,23 @@ app.post('/api/movies', (req, res) => {
     .catch((e) => res.status(500).json({ message: e.message }));
 });
 
-// UPDATE
+// CREATE Comment
+app.post('/api/movies/comments/:id', (req, res) => {
+  const { movie_id, author, comment } = req.body;
+  const safeValues = [movie_id, author, comment];
+  pool
+    .query(
+      'INSERT INTO comments (movie_id, author, comment) VALUES ($1,$2,$3) RETURNING *;',
+      safeValues
+    )
+    .then(({ rows }) => {
+      console.log(rows);
+      res.status(201).json(rows[0]);
+    })
+    .catch((e) => res.status(500).json({ message: e.message }));
+});
+
+// UPDATE Movie
 app.put('/api/movies/:id', (req, res) => {
   const { id } = req.params;
   const { title, director, year, rating, poster, genre } = req.body;
@@ -116,7 +168,7 @@ app.put('/api/movies/:id', (req, res) => {
     .catch((e) => res.status(500).json({ message: e.message }));
 });
 
-// DELETE
+// DELETE Movie
 app.delete('/api/movies/:id', (req, res) => {
   const { id } = req.params;
   const safeValues = [id];
